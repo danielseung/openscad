@@ -2809,6 +2809,111 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageAiAssistant">
+       <layout class="QVBoxLayout" name="verticalLayoutAi">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QGroupBox" name="groupBoxAiSettings">
+          <property name="title">
+           <string>AI Assistant (Claude)</string>
+          </property>
+          <layout class="QFormLayout" name="formLayoutAi">
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelAiApiKey">
+             <property name="text">
+              <string>API Key:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEditAiApiKey">
+             <property name="echoMode">
+              <enum>QLineEdit::PasswordEchoOnEdit</enum>
+             </property>
+             <property name="placeholderText">
+              <string>Enter your Anthropic API key</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelAiModel">
+             <property name="text">
+              <string>Model:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="comboBoxAiModel">
+             <item>
+              <property name="text">
+               <string>claude-sonnet-4-20250514</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>claude-opus-4-20250514</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>claude-haiku-4-5-20251001</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="labelAiOptions">
+             <property name="text">
+              <string>Options:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QCheckBox" name="checkBoxAiAutoPreview">
+             <property name="text">
+              <string>Auto-preview after applying code</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QCheckBox" name="checkBoxAiAutoApply">
+             <property name="text">
+              <string>Auto-apply generated code to editor</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacerAi">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="pageDialogs">
        <layout class="QVBoxLayout" name="verticalLayout_18">
         <property name="leftMargin">
@@ -2907,6 +3012,7 @@
    <addaction name="prefsActionInputButton"/>
    <addaction name="prefsActionMouse"/>
    <addaction name="prefsActionDialogs"/>
+   <addaction name="prefsActionAiAssistant"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -3035,6 +3141,21 @@
    </property>
    <property name="text">
     <string>Dialogs</string>
+   </property>
+  </action>
+  <action name="prefsActionAiAssistant">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsAdvanced.png</normaloff>:/icons/prefsAdvanced.png</iconset>
+   </property>
+   <property name="text">
+    <string>AI</string>
+   </property>
+   <property name="toolTip">
+    <string>AI Assistant Settings</string>
    </property>
   </action>
   <action name="actionLocalAppParameterDir">

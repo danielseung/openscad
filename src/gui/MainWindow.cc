@@ -113,6 +113,7 @@
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
+#include "gui/AiChat.h"
 #include "gui/CGALWorker.h"
 #include "gui/ColorList.h"
 #include "gui/Dock.h"
@@ -289,6 +290,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupErrorLog();
   setupFontList();
   setupColorList();
+  setupAiChat();
   setupDocks();
 
   setup3DView();
@@ -3567,6 +3569,37 @@ void MainWindow::setupColorList()
 }
 
 /**
+  Set up resources related to the AI Chat dock widget
+ */
+void MainWindow::setupAiChat()
+{
+  aiChatWidget->setMainWindow(this);
+  QObject::connect(aiChatDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onAiChatDockVisibilityChanged);
+  QObject::connect(aiChatWidget, &AiChat::requestApplyCode, this,
+                   &MainWindow::onAiChatApplyCode);
+}
+
+void MainWindow::onAiChatDockVisibilityChanged(bool isVisible)
+{
+  if (isVisible) {
+    aiChatWidget->onEditorContentChanged();
+    aiChatWidget->setFocus();
+    aiChatDock->raise();
+  }
+}
+
+void MainWindow::onAiChatApplyCode(const QString& code)
+{
+  if (activeEditor) {
+    activeEditor->setText(code);
+    if (Settings::SettingsAi::aiAutoPreview.value()) {
+      actionRenderPreview();
+    }
+  }
+}
+
+/**
   Set up resources related to the Viewport Control dock widget
  */
 void MainWindow::setupViewportControl()
@@ -3643,6 +3676,7 @@ void MainWindow::setupDocks()
     {fontListDock, _("&Font List")},
     {colorListDock, _("C&olor List")},
     {viewportControlDock, _("&Viewport-Control")},
+    {aiChatDock, _("AI &Chat")},
   };
   // clang-format off
 

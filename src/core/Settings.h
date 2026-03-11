@@ -624,6 +624,17 @@ public:
   static SettingsEntryEnum<ColorListSortType> colorListSortType;
 };
 
+constexpr inline auto SECTION_AI = "ai";
+
+class SettingsAi
+{
+public:
+  static SettingsEntryString anthropicApiKey;
+  static SettingsEntryString anthropicModel;
+  static SettingsEntryBool aiAutoPreview;
+  static SettingsEntryBool aiAutoApply;
+};
+
 class SettingsVisitor
 {
 public:

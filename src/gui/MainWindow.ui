@@ -717,6 +717,33 @@
     </layout>
    </widget>
   </widget>
+  <widget class="Dock" name="aiChatDock">
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="aiChatDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::StrongFocus</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayoutAiChat">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="AiChat" name="aiChatWidget" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="fileActionNew">
    <property name="icon">
     <iconset theme="chokusen-new"/>
@@ -1670,6 +1697,12 @@
    <class>ColorList</class>
    <extends>QWidget</extends>
    <header>gui/ColorList.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AiChat</class>
+   <extends>QWidget</extends>
+   <header>gui/AiChat.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

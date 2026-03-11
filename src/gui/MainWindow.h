@@ -146,6 +146,7 @@ private:
   void setupAnimate();
   void setupFontList();
   void setupColorList();
+  void setupAiChat();
   void setupViewportControl();
   void setupPreferences();
   void setup3DView();
@@ -303,6 +304,8 @@ private slots:
   void onAnimateDockVisibilityChanged(bool isVisible);
   void onFontListDockVisibilityChanged(bool isVisible);
   void onColorListDockVisibilityChanged(bool isVisible);
+  void onAiChatDockVisibilityChanged(bool isVisible);
+  void onAiChatApplyCode(const QString& code);
   void onViewportControlDockVisibilityChanged(bool isVisible);
   void onParametersDockVisibilityChanged(bool isVisible);
 

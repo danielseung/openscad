@@ -217,6 +217,7 @@ void Preferences::init()
   addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
+  addPrefPage(group, prefsActionAiAssistant, pageAiAssistant);
 
   connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
@@ -303,6 +304,21 @@ void Preferences::init()
   if (!profile.isEmpty()) {
     this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
   }
+
+  // AI Assistant settings
+  BlockSignals<QLineEdit *>(this->lineEditAiApiKey)
+    ->setText(QString::fromStdString(Settings::SettingsAi::anthropicApiKey.value()));
+  {
+    const QString currentModel = QString::fromStdString(Settings::SettingsAi::anthropicModel.value());
+    int modelIdx = this->comboBoxAiModel->findText(currentModel);
+    if (modelIdx >= 0) {
+      BlockSignals<QComboBox *>(this->comboBoxAiModel)->setCurrentIndex(modelIdx);
+    }
+  }
+  BlockSignals<QCheckBox *>(this->checkBoxAiAutoPreview)
+    ->setChecked(Settings::SettingsAi::aiAutoPreview.value());
+  BlockSignals<QCheckBox *>(this->checkBoxAiAutoApply)
+    ->setChecked(Settings::SettingsAi::aiAutoApply.value());
 
   emit editorConfigChanged();
 }
@@ -1243,6 +1259,30 @@ void Preferences::on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool state)
   writeSettings();
 }
 
+void Preferences::on_lineEditAiApiKey_editingFinished()
+{
+  Settings::SettingsAi::anthropicApiKey.setValue(this->lineEditAiApiKey->text().toStdString());
+  writeSettings();
+}
+
+void Preferences::on_comboBoxAiModel_activated(int)
+{
+  Settings::SettingsAi::anthropicModel.setValue(this->comboBoxAiModel->currentText().toStdString());
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAiAutoPreview_toggled(bool state)
+{
+  Settings::SettingsAi::aiAutoPreview.setValue(state);
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAiAutoApply_toggled(bool state)
+{
+  Settings::SettingsAi::aiAutoApply.setValue(state);
+  writeSettings();
+}
+
 void Preferences::writeSettings()
 {
   Settings::Settings::visit(SettingsWriter());
@@ -1466,6 +1506,19 @@ void Preferences::updateGUI()
                  Settings::Settings::octoPrintSlicerEngine.value());
   updateComboBox(this->comboBoxOctoPrintSlicingProfile,
                  Settings::Settings::octoPrintSlicerProfile.value());
+
+  // AI Assistant
+  BlockSignals<QLineEdit *>(this->lineEditAiApiKey)
+    ->setText(QString::fromStdString(Settings::SettingsAi::anthropicApiKey.value()));
+  {
+    const QString aiModel = QString::fromStdString(Settings::SettingsAi::anthropicModel.value());
+    int idx = this->comboBoxAiModel->findText(aiModel);
+    if (idx >= 0) {
+      BlockSignals<QComboBox *>(this->comboBoxAiModel)->setCurrentIndex(idx);
+    }
+  }
+  initUpdateCheckBox(this->checkBoxAiAutoPreview, Settings::SettingsAi::aiAutoPreview);
+  initUpdateCheckBox(this->checkBoxAiAutoApply, Settings::SettingsAi::aiAutoApply);
 }
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,

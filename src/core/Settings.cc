@@ -511,4 +511,9 @@ SettingsEntryEnum<ColorListSortType> SettingsColorList::colorListSortType(
   ColorListSortType::alphabetical);
 SettingsEntryBool SettingsColorList::colorListSortAscending(SECTION_COLOR_LIST, "sort-ascending", true);
 
+SettingsEntryString SettingsAi::anthropicApiKey(SECTION_AI, "apiKey", "");
+SettingsEntryString SettingsAi::anthropicModel(SECTION_AI, "model", "claude-sonnet-4-20250514");
+SettingsEntryBool SettingsAi::aiAutoPreview(SECTION_AI, "autoPreview", true);
+SettingsEntryBool SettingsAi::aiAutoApply(SECTION_AI, "autoApply", false);
+
 }  // namespace Settings

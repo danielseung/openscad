@@ -1303,6 +1303,8 @@ set(GUI_SOURCES
   src/gui/Measurement.cc
   src/gui/Animate.cc
   src/gui/FontList.cc
+  src/gui/AiChat.cc
+  src/gui/AnthropicClient.cc
   src/gui/ColorList.cc
   src/gui/ColorLabel.cc
   src/gui/ColorLayout.cc
@@ -1356,6 +1358,9 @@ set(GUI_HEADER_ONLY
 
 # To be added in Source for QtCreator to show them in project tree
 set(GUI_HEADERS
+    src/gui/AiChat.h
+    src/gui/AiChatConstants.h
+    src/gui/AnthropicClient.h
     src/gui/Animate.h
     src/gui/AppleEvents.h
     src/gui/AutoUpdater.h
