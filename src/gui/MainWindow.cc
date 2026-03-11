@@ -848,6 +848,9 @@ void MainWindow::compileDone(bool didchange)
 
 void MainWindow::compileEnded()
 {
+  if (aiChatWidget) {
+    aiChatWidget->onCompileFinished(compileErrors, compileWarnings);
+  }
   clearCurrentOutput();
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
@@ -2684,6 +2687,10 @@ void MainWindow::editorContentChanged()
     // removes the live selection feedbacks in both the 3d view and editor.
     clearAllSelectionIndicators();
   }
+
+  if (aiChatWidget && aiChatDock->isVisible()) {
+    aiChatWidget->onEditorContentChanged();
+  }
 }
 
 void MainWindow::on_viewActionTop_triggered()
@@ -3257,6 +3264,10 @@ void MainWindow::consoleOutput(const Message& msgObj)
   } else if (msgObj.group == message_group::Error) {
     ++this->compileErrors;
   }
+  if (aiChatWidget) {
+    bool isError = (msgObj.group == message_group::Error || msgObj.group == message_group::Warning);
+    aiChatWidget->onConsoleMessage(QString::fromStdString(msgObj.msg), isError);
+  }
   // FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
   // Then processEvents should no longer be needed here.
   this->processEvents();
@@ -3578,6 +3589,8 @@ void MainWindow::setupAiChat()
                    &MainWindow::onAiChatDockVisibilityChanged);
   QObject::connect(aiChatWidget, &AiChat::requestApplyCode, this,
                    &MainWindow::onAiChatApplyCode);
+  QObject::connect(tabManager, &TabManager::currentEditorChanged, this,
+                   [this](EditorInterface *) { aiChatWidget->onEditorContentChanged(); });
 }
 
 void MainWindow::onAiChatDockVisibilityChanged(bool isVisible)
