@@ -38,6 +38,11 @@ void AnthropicClient::setModel(const QString& m)
   model = m;
 }
 
+void AnthropicClient::setMaxTokens(int tokens)
+{
+  maxTokens = tokens;
+}
+
 void AnthropicClient::sendMessage(const QString& systemPrompt, const QJsonArray& conversationHistory)
 {
   if (currentReply) {
@@ -52,10 +57,11 @@ void AnthropicClient::sendMessage(const QString& systemPrompt, const QJsonArray&
   accumulatedResponse.clear();
   sseBuffer.clear();
   hadError = false;
+  stopReason.clear();
 
   QJsonObject body;
   body["model"] = model;
-  body["max_tokens"] = 4096;
+  body["max_tokens"] = maxTokens;
   body["stream"] = true;
   body["system"] = systemPrompt;
   body["messages"] = conversationHistory;
@@ -73,6 +79,7 @@ void AnthropicClient::sendMessage(const QString& systemPrompt, const QJsonArray&
 void AnthropicClient::abort()
 {
   if (currentReply) {
+    hadError = true;  // prevent responseComplete from firing
     currentReply->abort();
     currentReply->deleteLater();
     currentReply = nullptr;
@@ -92,9 +99,8 @@ void AnthropicClient::onReadyRead()
   int statusCode = currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
   if (statusCode != 200 && statusCode != 0) {
     hadError = true;
-    accumulatedResponse.clear();  // prevent responseComplete from firing
+    accumulatedResponse.clear();
 
-    // Read whatever error body is available (may be partial — onFinished handles the rest)
     QByteArray errorBody = currentReply->readAll();
     QString errorMsg;
     QJsonDocument errorDoc = QJsonDocument::fromJson(errorBody);
@@ -116,7 +122,7 @@ void AnthropicClient::onReadyRead()
       emit errorOccurred(QString("API error %1: %2").arg(statusCode).arg(
                            errorMsg.isEmpty() ? "Unknown error" : errorMsg));
     }
-    return;  // let onFinished handle cleanup — don't call abort() here
+    return;
   }
 
   sseBuffer.append(currentReply->readAll());
@@ -159,6 +165,9 @@ void AnthropicClient::onFinished()
 
     if (!accumulatedResponse.isEmpty()) {
       emit responseComplete(accumulatedResponse);
+      if (stopReason == "max_tokens") {
+        emit responseTruncated();
+      }
     }
   }
 
@@ -168,14 +177,11 @@ void AnthropicClient::onFinished()
 
 void AnthropicClient::parseSseEvent(const QByteArray& eventData)
 {
-  // Parse SSE: each line is "field: value"
-  // We care about "data:" lines
-  // Handle both \r\n and \n line endings
   for (const QByteArray& rawLine : eventData.split('\n')) {
-    QByteArray line = rawLine.trimmed();  // strips \r as well
+    QByteArray line = rawLine.trimmed();
     if (!line.startsWith("data: ")) continue;
 
-    QByteArray jsonData = line.mid(6); // skip "data: "
+    QByteArray jsonData = line.mid(6);
     if (jsonData.trimmed() == "[DONE]") continue;
 
     QJsonDocument doc = QJsonDocument::fromJson(jsonData);
@@ -190,6 +196,23 @@ void AnthropicClient::parseSseEvent(const QByteArray& eventData)
         QString text = delta["text"].toString();
         accumulatedResponse += text;
         emit responseChunk(text);
+      }
+    } else if (type == "message_delta") {
+      // Capture stop_reason and usage from message_delta
+      QJsonObject delta = obj["delta"].toObject();
+      if (delta.contains("stop_reason")) {
+        stopReason = delta["stop_reason"].toString();
+      }
+      QJsonObject usage = obj["usage"].toObject();
+      if (usage.contains("output_tokens")) {
+        emit responseUsage(0, usage["output_tokens"].toInt());
+      }
+    } else if (type == "message_start") {
+      // Capture input token usage
+      QJsonObject message = obj["message"].toObject();
+      QJsonObject usage = message["usage"].toObject();
+      if (usage.contains("input_tokens")) {
+        emit responseUsage(usage["input_tokens"].toInt(), 0);
       }
     } else if (type == "message_stop") {
       // Message complete — handled in onFinished

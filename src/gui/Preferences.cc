@@ -315,6 +315,8 @@ void Preferences::init()
       BlockSignals<QComboBox *>(this->comboBoxAiModel)->setCurrentIndex(modelIdx);
     }
   }
+  BlockSignals<QSpinBox *>(this->spinBoxAiMaxTokens)
+    ->setValue(Settings::SettingsAi::maxTokens.value());
   BlockSignals<QCheckBox *>(this->checkBoxAiAutoPreview)
     ->setChecked(Settings::SettingsAi::aiAutoPreview.value());
   BlockSignals<QCheckBox *>(this->checkBoxAiAutoApply)
@@ -1268,6 +1270,12 @@ void Preferences::on_lineEditAiApiKey_editingFinished()
 void Preferences::on_comboBoxAiModel_activated(int)
 {
   Settings::SettingsAi::anthropicModel.setValue(this->comboBoxAiModel->currentText().toStdString());
+  writeSettings();
+}
+
+void Preferences::on_spinBoxAiMaxTokens_valueChanged(int value)
+{
+  Settings::SettingsAi::maxTokens.setValue(value);
   writeSettings();
 }
 

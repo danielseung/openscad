@@ -53,6 +53,8 @@ private slots:
   void onAutoApplyToggled(bool checked);
   void onApiResponseChunk(const QString& chunk);
   void onApiResponseComplete(const QString& fullResponse);
+  void onApiResponseUsage(int inputTokens, int outputTokens);
+  void onApiResponseTruncated();
   void onApiError(const QString& error);
 
 private:
@@ -68,24 +70,32 @@ private:
 
   QString currentEditorContent;
   QString currentFileName;
-  QStringList consoleErrors;  // ring buffer of recent error/warning lines
+  QString previousFileName;  // track file switches
+  QStringList consoleErrors;
   static constexpr int MAX_CONSOLE_LINES = 50;
 
   QString lastExtractedCode;
   bool isStreaming = false;
-  QString streamingBuffer;  // accumulates full response during streaming
+  QString streamingBuffer;
+  int streamingBlockStart = -1;  // character offset where the streaming block begins
   int lastCompileErrors = 0;
   int lastCompileWarnings = 0;
+  int lastInputTokens = 0;
+  int lastOutputTokens = 0;
 
   void appendMessage(const QString& role, const QString& content);
+  void appendHtml(const QString& html);
+  QString formatMarkdown(const QString& text) const;
   void renderStreamingResponse();
   void finalizeStreamingMessage();
   void setInputEnabled(bool enabled);
   void updateContextLabel();
+  void updateTokenLabel();
   void trimConversationHistory();
   QString buildSystemPrompt() const;
   QJsonArray buildConversationJson() const;
   QString buildUserMessageWithContext(const QString& userText) const;
   QString extractCodeBlock(const QString& response) const;
+  QString getSelectedEditorText() const;
   bool eventFilter(QObject *obj, QEvent *event) override;
 };

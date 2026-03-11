@@ -33,6 +33,7 @@ public:
 
   void setApiKey(const QString& key);
   void setModel(const QString& model);
+  void setMaxTokens(int tokens);
   void sendMessage(const QString& systemPrompt, const QJsonArray& conversationHistory);
   void abort();
   bool isBusy() const;
@@ -40,6 +41,8 @@ public:
 signals:
   void responseChunk(const QString& textDelta);
   void responseComplete(const QString& fullResponse);
+  void responseUsage(int inputTokens, int outputTokens);
+  void responseTruncated();
   void errorOccurred(const QString& errorMessage);
 
 private slots:
@@ -51,9 +54,11 @@ private:
   QNetworkReply *currentReply = nullptr;
   QString apiKey;
   QString model;
+  int maxTokens = 8192;
   QString accumulatedResponse;
   QByteArray sseBuffer;
   bool hadError = false;
+  QString stopReason;
 
   void parseSseEvent(const QByteArray& eventData);
 };

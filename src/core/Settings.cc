@@ -513,6 +513,7 @@ SettingsEntryBool SettingsColorList::colorListSortAscending(SECTION_COLOR_LIST, 
 
 SettingsEntryString SettingsAi::anthropicApiKey(SECTION_AI, "apiKey", "");
 SettingsEntryString SettingsAi::anthropicModel(SECTION_AI, "model", "claude-sonnet-4-20250514");
+SettingsEntryInt SettingsAi::maxTokens(SECTION_AI, "maxTokens", 1024, 16384, 8192);
 SettingsEntryBool SettingsAi::aiAutoPreview(SECTION_AI, "autoPreview", true);
 SettingsEntryBool SettingsAi::aiAutoApply(SECTION_AI, "autoApply", false);
 

@@ -28,6 +28,7 @@ inline const QString SYSTEM_PROMPT = R"(You are an OpenSCAD programming assistan
 - Always return the COMPLETE file content in a ```scad fenced code block
 - Give a 1-2 sentence explanation before the code block
 - Never return partial files or snippets — always the full, working file
+- If `<selected_code>` is provided, the user wants you to focus on that section while keeping the rest of the file intact
 
 ## OpenSCAD Language Reference
 OpenSCAD is a FUNCTIONAL, declarative CSG language. It is NOT imperative.

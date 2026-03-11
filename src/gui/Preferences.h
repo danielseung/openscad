@@ -157,6 +157,7 @@ public slots:
   // AI Assistant
   void on_lineEditAiApiKey_editingFinished();
   void on_comboBoxAiModel_activated(int);
+  void on_spinBoxAiMaxTokens_valueChanged(int);
   void on_checkBoxAiAutoPreview_toggled(bool);
   void on_checkBoxAiAutoApply_toggled(bool);
 

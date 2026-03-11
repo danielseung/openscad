@@ -6,25 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
+    <width>340</width>
     <height>600</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
    <property name="leftMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="bottomMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="spacing">
-    <number>4</number>
+    <number>0</number>
    </property>
    <item>
     <widget class="QTextBrowser" name="chatDisplay">
@@ -40,121 +40,185 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="contextBar">
-     <item>
-      <widget class="QLabel" name="contextLabel">
-       <property name="text">
-        <string>Context:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="editorChip">
-       <property name="text">
-        <string>Editor</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="errorsChip">
-       <property name="text">
-        <string>Errors</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="contextSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="codeActions">
-     <item>
-      <widget class="QPushButton" name="applyCodeButton">
-       <property name="text">
-        <string>Apply to Editor</string>
-       </property>
-       <property name="visible">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="autoApplyCheckBox">
-       <property name="text">
-        <string>Auto-apply</string>
-       </property>
-       <property name="visible">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="codeActionsSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QPlainTextEdit" name="inputText">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>80</height>
-      </size>
+    <widget class="QFrame" name="bottomPanel">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
-     <property name="placeholderText">
-      <string>Describe what you want to create or modify... (Ctrl+Enter to send)</string>
-     </property>
+     <layout class="QVBoxLayout" name="bottomPanelLayout">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="codeActions">
+        <item>
+         <widget class="QPushButton" name="applyCodeButton">
+          <property name="text">
+           <string>Apply to Editor</string>
+          </property>
+          <property name="visible">
+           <bool>false</bool>
+          </property>
+          <property name="icon">
+           <iconset theme="edit-paste"/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="autoApplyCheckBox">
+          <property name="text">
+           <string>Auto</string>
+          </property>
+          <property name="visible">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>Automatically apply generated code to the editor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="codeActionsSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="tokenLabel">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="visible">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string>color: gray; font-size: 10px;</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="contextBar">
+        <item>
+         <widget class="QLabel" name="contextLabel">
+          <property name="text">
+           <string>Context:</string>
+          </property>
+          <property name="styleSheet">
+           <string>font-size: 11px; color: gray;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="editorChip">
+          <property name="text">
+           <string>Editor</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Include current editor content as context</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="errorsChip">
+          <property name="text">
+           <string>Errors</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>Include console errors as context</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="contextSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="inputText">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="placeholderText">
+         <string>Describe what you want... (Ctrl+Enter to send)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="buttonBar">
+        <item>
+         <widget class="QPushButton" name="sendButton">
+          <property name="text">
+           <string>Send</string>
+          </property>
+          <property name="shortcut">
+           <string>Ctrl+Return</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="stopButton">
+          <property name="text">
+           <string>Stop</string>
+          </property>
+          <property name="visible">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="buttonSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="clearButton">
+          <property name="text">
+           <string>Clear</string>
+          </property>
+          <property name="toolTip">
+           <string>Clear conversation history</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="buttonBar">
-     <item>
-      <widget class="QPushButton" name="sendButton">
-       <property name="text">
-        <string>Send</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="stopButton">
-       <property name="text">
-        <string>Stop</string>
-       </property>
-       <property name="visible">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="buttonSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="clearButton">
-       <property name="text">
-        <string>Clear</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
   </layout>
  </widget>

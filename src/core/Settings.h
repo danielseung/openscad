@@ -631,6 +631,7 @@ class SettingsAi
 public:
   static SettingsEntryString anthropicApiKey;
   static SettingsEntryString anthropicModel;
+  static SettingsEntryInt maxTokens;
   static SettingsEntryBool aiAutoPreview;
   static SettingsEntryBool aiAutoApply;
 };
