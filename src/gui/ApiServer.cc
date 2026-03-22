@@ -10,6 +10,7 @@
 #include "gui/ApiServer.h"
 
 #include <QBuffer>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -419,6 +420,10 @@ QByteArray ApiServer::handlePostEditorInsert(const QByteArray& body)
 QByteArray ApiServer::handlePostCompilePreview()
 {
   QJsonObject obj;
+  if (GuiLocker::isLocked()) {
+    obj["error"] = "Compile already in progress";
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
   mainWindow->actionRenderPreview();
   obj["status"] = "started";
   return QJsonDocument(obj).toJson(QJsonDocument::Compact);
@@ -427,6 +432,10 @@ QByteArray ApiServer::handlePostCompilePreview()
 QByteArray ApiServer::handlePostCompileRender()
 {
   QJsonObject obj;
+  if (GuiLocker::isLocked()) {
+    obj["error"] = "Compile already in progress";
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
   // Trigger F6 render via the menu action (public slot via auto-connect)
   QMetaObject::invokeMethod(mainWindow, "on_designActionRender_triggered");
   obj["status"] = "started";
@@ -436,6 +445,10 @@ QByteArray ApiServer::handlePostCompileRender()
 QByteArray ApiServer::handlePostViewportCamera(const QByteArray& body)
 {
   QJsonObject obj;
+  if (!mainWindow->qglview) {
+    obj["error"] = "Viewport not available";
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
   QJsonDocument doc = QJsonDocument::fromJson(body);
   if (!doc.isObject()) {
     obj["error"] = "Invalid JSON";
@@ -481,13 +494,17 @@ QByteArray ApiServer::handlePostViewportViewAll()
 QByteArray ApiServer::handlePostFileSave()
 {
   QJsonObject obj;
-  if (mainWindow->activeEditor) {
-    bool result = mainWindow->tabManager->save(mainWindow->activeEditor);
-    obj["ok"] = result;
-    if (!result) obj["error"] = "Save failed (file may need save-as)";
-  } else {
+  if (!mainWindow->activeEditor) {
     obj["error"] = "No active editor";
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
   }
+  if (mainWindow->activeEditor->filepath.isEmpty()) {
+    obj["error"] = "File has no path. Use /api/file/saveas with a path instead.";
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
+  bool result = mainWindow->tabManager->save(mainWindow->activeEditor);
+  obj["ok"] = result;
+  if (!result) obj["error"] = "Save failed";
   return QJsonDocument(obj).toJson(QJsonDocument::Compact);
 }
 
@@ -521,6 +538,10 @@ QByteArray ApiServer::handlePostFileOpen(const QByteArray& body)
   }
 
   QString path = doc.object()["path"].toString();
+  if (!QFileInfo::exists(path)) {
+    obj["error"] = QString("File not found: %1").arg(path);
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
   mainWindow->tabManager->open(path);
   obj["ok"] = true;
   return QJsonDocument(obj).toJson(QJsonDocument::Compact);
@@ -544,6 +565,11 @@ QByteArray ApiServer::handlePostExport(const QByteArray& body)
   if (!mainWindow->rootGeom) {
     obj["error"] = "No rendered geometry. Run render (F6) first.";
     return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
+
+  // Warn if editor content has changed since last render
+  if (mainWindow->activeEditor && !mainWindow->activeEditor->contentsRendered) {
+    obj["warning"] = "Editor content modified since last render. Export may not match current code. Run render (F6) again.";
   }
 
   QString formatStr = json["format"].toString().toLower();
