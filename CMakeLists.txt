@@ -1096,6 +1096,7 @@ set(CORE_SOURCES
   src/io/import_json.cc
   src/io/import_obj.cc
   src/io/import_off.cc
+  src/io/import_step.cc
   src/io/import_stl.cc
   src/io/import_svg.cc
   src/platform/PlatformUtils.cc

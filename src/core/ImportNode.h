@@ -19,6 +19,7 @@ enum class ImportType {
   DXF,
   NEF3,
   OBJ,
+  STEP,
 };
 
 class ImportNode : public LeafNode

@@ -92,6 +92,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
     else if (ext == ".obj") actualtype = ImportType::OBJ;
+    else if (ext == ".step" || ext == ".stp") actualtype = ImportType::STEP;
   }
 
   auto node =
@@ -215,6 +216,10 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   }
   case ImportType::OBJ: {
     g = optionally_center(import_obj(this->filename, loc), this->center);
+    break;
+  }
+  case ImportType::STEP: {
+    g = optionally_center(import_step(this->filename, loc), this->center);
     break;
   }
   case ImportType::SVG: {
