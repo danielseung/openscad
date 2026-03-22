@@ -518,13 +518,26 @@ QByteArray ApiServer::handlePostFileSaveAs(const QByteArray& body)
   }
 
   QString path = doc.object()["path"].toString();
-  if (mainWindow->activeEditor) {
-    bool result = mainWindow->tabManager->saveAs(mainWindow->activeEditor, path);
-    obj["ok"] = result;
-    if (!result) obj["error"] = "Save failed";
-  } else {
+  if (!mainWindow->activeEditor) {
     obj["error"] = "No active editor";
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
   }
+
+  // Validate parent directory exists and is writable
+  QFileInfo pathInfo(path);
+  QFileInfo dirInfo(pathInfo.absolutePath());
+  if (!dirInfo.exists()) {
+    obj["error"] = QString("Directory does not exist: %1").arg(pathInfo.absolutePath());
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
+  if (!dirInfo.isWritable()) {
+    obj["error"] = QString("Directory is not writable: %1").arg(pathInfo.absolutePath());
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
+
+  bool result = mainWindow->tabManager->saveAs(mainWindow->activeEditor, path);
+  obj["ok"] = result;
+  if (!result) obj["error"] = "Save failed";
   return QJsonDocument(obj).toJson(QJsonDocument::Compact);
 }
 
@@ -586,10 +599,29 @@ QByteArray ApiServer::handlePostExport(const QByteArray& body)
     else if (formatStr == "obj") format = FileFormat::OBJ;
     else if (formatStr == "dxf") format = FileFormat::DXF;
     else if (formatStr == "svg") format = FileFormat::SVG;
+    else if (formatStr == "pdf") format = FileFormat::PDF;
     else {
-      obj["error"] = QString("Unknown format: %1").arg(formatStr);
+      obj["error"] = QString("Unknown format: %1. Supported: stl, off, amf, 3mf, obj, dxf, svg, pdf").arg(formatStr);
       return QJsonDocument(obj).toJson(QJsonDocument::Compact);
     }
+  }
+
+  // Validate output path
+  QFileInfo exportPathInfo(path);
+  QFileInfo exportDirInfo(exportPathInfo.absolutePath());
+  if (!exportDirInfo.exists() || !exportDirInfo.isWritable()) {
+    obj["error"] = QString("Cannot write to: %1").arg(exportPathInfo.absolutePath());
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
+
+  // Check 2D/3D compatibility
+  if (fileformat::is2D(format) && mainWindow->rootGeom->getDimension() == 3) {
+    obj["error"] = QString("Cannot export 3D geometry to 2D format '%1'. Use stl, off, amf, 3mf, or obj.").arg(formatStr);
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+  }
+  if (fileformat::is3D(format) && mainWindow->rootGeom->getDimension() == 2) {
+    obj["error"] = QString("Cannot export 2D geometry to 3D format '%1'. Use dxf or svg.").arg(formatStr);
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
   }
 
   auto& fmtInfo = fileformat::info(format);
