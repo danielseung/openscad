@@ -66,6 +66,31 @@ AiChat::AiChat(QWidget *parent) : QWidget(parent)
     QString("QTextBrowser { background-color: %1; border: none; }")
       .arg(baseBg.name()));
 
+  // Input field with visible border
+  QColor borderColor = pal.color(QPalette::Mid);
+  inputText->setStyleSheet(
+    QString("QPlainTextEdit { border: 1px solid %1; border-radius: 6px; padding: 4px; }")
+      .arg(borderColor.name()));
+
+  // Top border on bottom panel for visual separation
+  bottomPanel->setStyleSheet(
+    QString("QFrame#bottomPanel { border-top: 1px solid %1; }")
+      .arg(borderColor.name()));
+
+  // Accent the Send button as primary action
+  QColor accent = pal.color(QPalette::Highlight);
+  QColor accentText = pal.color(QPalette::HighlightedText);
+  sendButton->setStyleSheet(
+    QString("QPushButton { background-color: %1; color: %2; border-radius: 4px; padding: 4px 12px; }"
+            "QPushButton:hover { background-color: %3; }")
+      .arg(accent.name(), accentText.name(), accent.lighter(115).name()));
+
+  // Style Apply button similarly but secondary
+  applyCodeButton->setStyleSheet(
+    QString("QPushButton { border: 1px solid %1; border-radius: 4px; padding: 4px 12px; }"
+            "QPushButton:hover { background-color: %2; }")
+      .arg(borderColor.name(), borderColor.lighter(120).name()));
+
   // Token label starts hidden
   tokenLabel->setVisible(false);
 }
@@ -195,12 +220,16 @@ void AiChat::onApplyClicked()
 
 void AiChat::onClearClicked()
 {
+  if (apiClient->isBusy()) {
+    apiClient->abort();
+  }
   conversationHistory.clear();
   chatDisplay->clear();
   lastExtractedCode.clear();
   consoleErrors.clear();
   streamingBuffer.clear();
   streamingBlockStart = -1;
+  streamingPrevLen = 0;
   isStreaming = false;
   previousFileName.clear();
   lastInputTokens = 0;
@@ -225,12 +254,12 @@ void AiChat::onApiResponseComplete(const QString& fullResponse)
 {
   conversationHistory.push_back({"assistant", fullResponse});
 
+  bool wasStreaming = isStreaming && streamingBlockStart != -1;
   finalizeStreamingMessage();
   setInputEnabled(true);
 
-  // Re-render the final message with markdown formatting
-  if (streamingBlockStart == -1) {
-    // If streaming never started (shouldn't happen), just append
+  // Fallback: if streaming never started, render the full response
+  if (!wasStreaming) {
     appendMessage("assistant", fullResponse);
   }
 
@@ -267,6 +296,12 @@ void AiChat::onApiResponseTruncated()
 void AiChat::onApiError(const QString& error)
 {
   finalizeStreamingMessage();
+
+  // Remove orphaned user message that got no assistant reply
+  if (!conversationHistory.empty() && conversationHistory.back().role == "user") {
+    conversationHistory.pop_back();
+  }
+
   appendMessage("error", error);
   setInputEnabled(true);
 }
@@ -428,29 +463,29 @@ void AiChat::renderStreamingResponse()
   bool isDark = baseBg.lightnessF() < 0.5;
   QColor assistBg = isDark ? baseBg.lighter(120) : baseBg.darker(104);
 
-  // During streaming, show plain escaped text (no markdown parsing for perf)
-  QString formatted = streamingBuffer.toHtmlEscaped().replace("\n", "<br>");
-  QString html = QString(
-    "<div style='margin:6px 0; padding:8px 12px; "
-    "background-color:%1; color:%2; border-radius:8px;'>"
-    "<b style='color:%2;'>Claude</b><br>%3</div>"
-  ).arg(assistBg.name(), textColor.name(), formatted);
-
   if (!isStreaming) {
-    // First chunk — record position and append
+    // First chunk — render the full block with header
     isStreaming = true;
+    streamingPrevLen = 0;
+    QString formatted = streamingBuffer.toHtmlEscaped().replace("\n", "<br>");
+    QString html = QString(
+      "<div style='margin:6px 0; padding:8px 12px; "
+      "background-color:%1; color:%2; border-radius:8px;'>"
+      "<b style='color:%2;'>Claude</b><br>%3</div>"
+    ).arg(assistBg.name(), textColor.name(), formatted);
     streamingBlockStart = chatDisplay->document()->characterCount();
     chatDisplay->append(html);
+    streamingPrevLen = streamingBuffer.length();
   } else {
-    // Subsequent chunks — use tracked position to replace the streaming block
-    QTextCursor cursor(chatDisplay->document());
-    if (streamingBlockStart >= 0) {
-      // Position is 1 before the block we inserted (after the trailing newline of previous content)
-      int pos = qMin(streamingBlockStart, chatDisplay->document()->characterCount());
-      cursor.setPosition(pos);
-      cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
-      cursor.removeSelectedText();
-      cursor.insertHtml(html);
+    // Subsequent chunks — append only the new delta text at document end
+    QString delta = streamingBuffer.mid(streamingPrevLen);
+    streamingPrevLen = streamingBuffer.length();
+    if (!delta.isEmpty()) {
+      QString escaped = delta.toHtmlEscaped().replace("\n", "<br>");
+      QTextCursor cursor(chatDisplay->document());
+      // Position just before the closing </div> (i.e., end of content)
+      cursor.movePosition(QTextCursor::End);
+      cursor.insertHtml(escaped);
     }
   }
 
@@ -490,6 +525,7 @@ void AiChat::finalizeStreamingMessage()
   isStreaming = false;
   streamingBuffer.clear();
   streamingBlockStart = -1;
+  streamingPrevLen = 0;
 }
 
 void AiChat::setInputEnabled(bool enabled)
@@ -586,20 +622,28 @@ QString AiChat::buildUserMessageWithContext(const QString& userText) const
     escapedName.replace("&", "&amp;");
     QString nameAttr = escapedName.isEmpty() ? "" : QString(" name=\"%1\"").arg(escapedName);
 
+    // Escape closing XML tags in content to prevent prompt injection
+    auto escapeXmlTags = [](QString s) {
+      s.replace("</current_file>", "<\\/current_file>");
+      s.replace("</selected_code>", "<\\/selected_code>");
+      s.replace("</errors>", "<\\/errors>");
+      return s;
+    };
+
     if (!selection.isEmpty()) {
       // Send both full file and selection, highlighting what's selected
       QString editorContent = currentEditorContent;
       if (editorContent.length() > 32000) {
         editorContent = editorContent.left(32000) + "\n... (truncated)";
       }
-      contextual += QString("<current_file%1>\n%2\n</current_file>\n\n").arg(nameAttr, editorContent);
-      contextual += QString("<selected_code>\n%1\n</selected_code>\n\n").arg(selection);
+      contextual += QString("<current_file%1>\n%2\n</current_file>\n\n").arg(nameAttr, escapeXmlTags(editorContent));
+      contextual += QString("<selected_code>\n%1\n</selected_code>\n\n").arg(escapeXmlTags(selection));
     } else {
       QString editorContent = currentEditorContent;
       if (editorContent.length() > 32000) {
         editorContent = editorContent.left(32000) + "\n... (truncated)";
       }
-      contextual += QString("<current_file%1>\n%2\n</current_file>\n\n").arg(nameAttr, editorContent);
+      contextual += QString("<current_file%1>\n%2\n</current_file>\n\n").arg(nameAttr, escapeXmlTags(editorContent));
     }
   }
 

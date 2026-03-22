@@ -59,7 +59,7 @@ private slots:
 
 private:
   MainWindow *mainWindow = nullptr;
-  AnthropicClient *apiClient;
+  AnthropicClient *apiClient = nullptr;
 
   struct Message {
     QString role;
@@ -78,6 +78,7 @@ private:
   bool isStreaming = false;
   QString streamingBuffer;
   int streamingBlockStart = -1;  // character offset where the streaming block begins
+  int streamingPrevLen = 0;      // length of streamingBuffer at last render
   int lastCompileErrors = 0;
   int lastCompileWarnings = 0;
   int lastInputTokens = 0;

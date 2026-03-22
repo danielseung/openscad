@@ -851,6 +851,11 @@ void MainWindow::compileEnded()
   if (aiChatWidget) {
     aiChatWidget->onCompileFinished(compileErrors, compileWarnings);
   }
+  if (aiCodeApplied) {
+    aiCodeApplied = false;
+    qglview->viewAll();
+    qglview->update();
+  }
   clearCurrentOutput();
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
@@ -3607,6 +3612,7 @@ void MainWindow::onAiChatApplyCode(const QString& code)
   if (activeEditor) {
     activeEditor->setText(code);
     if (Settings::SettingsAi::aiAutoPreview.value()) {
+      aiCodeApplied = true;
       actionRenderPreview();
     }
   }

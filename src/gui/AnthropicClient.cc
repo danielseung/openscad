@@ -83,6 +83,8 @@ void AnthropicClient::abort()
     currentReply->abort();
     currentReply->deleteLater();
     currentReply = nullptr;
+    accumulatedResponse.clear();
+    sseBuffer.clear();
   }
 }
 
@@ -159,7 +161,9 @@ void AnthropicClient::onFinished()
   if (!hadError) {
     if (currentReply->error() == QNetworkReply::OperationCanceledError) {
       // User aborted — don't emit error
-    } else if (currentReply->error() != QNetworkReply::NoError && accumulatedResponse.isEmpty()) {
+    } else if (currentReply->error() != QNetworkReply::NoError) {
+      // Network error — report it, discard any partial response
+      accumulatedResponse.clear();
       emit errorOccurred("Network error: " + currentReply->errorString());
     }
 

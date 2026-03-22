@@ -722,7 +722,9 @@ bool TabManager::saveAs(EditorInterface *edt)
 {
   assert(edt != nullptr);
 
-  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+  const auto dir = edt->filepath.isEmpty()
+    ? QDir::homePath() + "/Untitled.scad"
+    : edt->filepath;
   auto filename =
     QFileDialog::getSaveFileName(parent, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
   if (filename.isEmpty()) {
@@ -773,7 +775,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
   const QString path = edt->filepath;
 
-  QDir dir(_("Untitled.scad"));
+  QDir dir(QDir::homePath() + "/Untitled.scad");
 
   if (!path.isEmpty()) {
     QFileInfo info(path);

@@ -26,6 +26,7 @@
 
 #include "gui/Console.h"
 
+#include <QApplication>
 #include <QBrush>
 #include <QColor>
 #include <QContextMenuEvent>
@@ -129,13 +130,17 @@ void Console::addHtml(const QString& html)
 
 void Console::setConsoleFont(const QString& fontFamily, uint ptSize)
 {
+  const QPalette &pal = QApplication::palette();
   const auto stylesheet = QString(R"(
     QPlainTextEdit {
         font-family: '%1';
         font-size: %2pt;
+        background-color: %3;
+        color: %4;
     }
   )");
-  this->setStyleSheet(stylesheet.arg(fontFamily, QString::number(ptSize)));
+  this->setStyleSheet(stylesheet.arg(fontFamily, QString::number(ptSize),
+    pal.color(QPalette::Base).name(), pal.color(QPalette::Text).name()));
 }
 
 void Console::update()

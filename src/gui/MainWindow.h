@@ -126,6 +126,7 @@ public:
   ~MainWindow() override;
 
 private:
+  bool aiCodeApplied = false;  // triggers viewAll after AI code apply
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;

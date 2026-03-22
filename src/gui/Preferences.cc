@@ -39,6 +39,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QObject>
+#include <QPalette>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSettings>
@@ -130,14 +131,18 @@ void Preferences::init()
   const QString found_family{QFontInfo{font}.family()};
   this->defaultmap["editor/fontfamily"] = found_family;
   this->defaultmap["editor/fontsize"] = 12;
-  this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
+  {
+    const QPalette pal;
+    const bool dark = pal.color(QPalette::Window).lightnessF() < 0.5;
+    this->defaultmap["editor/syntaxhighlight"] = dark ? "Tomorrow Night" : "For Light Background";
+  }
 
   const QFont applicationFont = QTextDocument().defaultFont();
   this->defaultmap["advanced/applicationFontFamily"] = applicationFont.family();
   this->defaultmap["advanced/applicationFontSize"] = applicationFont.pointSize();
 
   // Leave Console font with default if user has not chosen another.
-  this->defaultmap["advanced/consoleFontFamily"] = applicationFont.family();
+  this->defaultmap["advanced/consoleFontFamily"] = found_family;
   this->defaultmap["advanced/consoleFontSize"] = applicationFont.pointSize();
 
   // Leave Customizer font with default if user has not chosen another.
@@ -225,7 +230,11 @@ void Preferences::init()
   this->actionTriggered(this->prefsAction3DView);
 
   // 3D View pane
-  this->defaultmap["3dview/colorscheme"] = "Cornfield";
+  {
+    const QPalette pal;
+    const bool dark = pal.color(QPalette::Window).lightnessF() < 0.5;
+    this->defaultmap["3dview/colorscheme"] = dark ? "Tomorrow Night" : "Cornfield";
+  }
 
   // Advanced pane
   const int absolute_max = (sizeof(void *) == 8) ? 1024 * 1024 : 2048;  // 1TB for 64bit or 2GB for 32bit
@@ -375,6 +384,7 @@ void Preferences::hidePasswords()
 {
   this->pushButtonOctoPrintApiKey->setChecked(false);
   this->lineEditOctoPrintApiKey->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit);
+  this->lineEditAiApiKey->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit);
 }
 
 void Preferences::on_stackedWidget_currentChanged(int)
