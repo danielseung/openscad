@@ -114,6 +114,7 @@
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
 #include "gui/AiChat.h"
+#include "gui/ApiServer.h"
 #include "gui/CGALWorker.h"
 #include "gui/ColorList.h"
 #include "gui/Dock.h"
@@ -291,6 +292,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupFontList();
   setupColorList();
   setupAiChat();
+  setupApiServer();
   setupDocks();
 
   setup3DView();
@@ -3596,6 +3598,21 @@ void MainWindow::setupAiChat()
                    &MainWindow::onAiChatApplyCode);
   QObject::connect(tabManager, &TabManager::currentEditorChanged, this,
                    [this](EditorInterface *) { aiChatWidget->onEditorContentChanged(); });
+}
+
+void MainWindow::setupApiServer()
+{
+  static bool serverStarted = false;
+  if (serverStarted) return; // only one server instance across all windows
+
+  if (Settings::SettingsApi::apiEnabled.value()) {
+    apiServer = new ApiServer(this);
+    apiServer->setMainWindow(this);
+    int port = Settings::SettingsApi::apiPort.value();
+    if (apiServer->start(port)) {
+      serverStarted = true;
+    }
+  }
 }
 
 void MainWindow::onAiChatDockVisibilityChanged(bool isVisible)

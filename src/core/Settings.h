@@ -636,6 +636,16 @@ public:
   static SettingsEntryBool aiAutoApply;
 };
 
+constexpr inline auto SECTION_API = "api";
+
+class SettingsApi
+{
+public:
+  static SettingsEntryBool apiEnabled;
+  static SettingsEntryInt apiPort;
+  static SettingsEntryString apiAuthToken;
+};
+
 class SettingsVisitor
 {
 public:

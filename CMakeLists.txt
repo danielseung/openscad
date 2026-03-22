@@ -1305,6 +1305,7 @@ set(GUI_SOURCES
   src/gui/FontList.cc
   src/gui/AiChat.cc
   src/gui/AnthropicClient.cc
+  src/gui/ApiServer.cc
   src/gui/ColorList.cc
   src/gui/ColorLabel.cc
   src/gui/ColorLayout.cc
@@ -1361,6 +1362,7 @@ set(GUI_HEADERS
     src/gui/AiChat.h
     src/gui/AiChatConstants.h
     src/gui/AnthropicClient.h
+    src/gui/ApiServer.h
     src/gui/Animate.h
     src/gui/AppleEvents.h
     src/gui/AutoUpdater.h

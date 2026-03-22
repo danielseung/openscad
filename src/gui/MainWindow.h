@@ -43,6 +43,7 @@
 Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
+class ApiServer;
 class BuiltinContext;
 class CGALWorker;
 class CSGNode;
@@ -127,6 +128,7 @@ public:
 
 private:
   bool aiCodeApplied = false;  // triggers viewAll after AI code apply
+  ApiServer *apiServer = nullptr;
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;
@@ -148,6 +150,7 @@ private:
   void setupFontList();
   void setupColorList();
   void setupAiChat();
+  void setupApiServer();
   void setupViewportControl();
   void setupPreferences();
   void setup3DView();

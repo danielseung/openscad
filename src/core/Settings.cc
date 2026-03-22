@@ -517,4 +517,8 @@ SettingsEntryInt SettingsAi::maxTokens(SECTION_AI, "maxTokens", 1024, 16384, 819
 SettingsEntryBool SettingsAi::aiAutoPreview(SECTION_AI, "autoPreview", true);
 SettingsEntryBool SettingsAi::aiAutoApply(SECTION_AI, "autoApply", false);
 
+SettingsEntryBool SettingsApi::apiEnabled(SECTION_API, "enabled", true);
+SettingsEntryInt SettingsApi::apiPort(SECTION_API, "port", 1024, 65535, 8765);
+SettingsEntryString SettingsApi::apiAuthToken(SECTION_API, "authToken", "");
+
 }  // namespace Settings
